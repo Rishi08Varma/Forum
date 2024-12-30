@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Account</h2>
+<p>Username: {{ current_user.username }}</p>
+<p>Email: {{ current_user.email }}</p>
+<p>Display Name: {{ current_user.display_name }}</p>
+<img src="{{ url_for('static', filename='profile_pics/' + current_user.image_file) }}" alt="Profile Picture" class="img-thumbnail">
+<a href="{{ url_for('main.change_password') }}" class="btn btn-primary">Change Password</a>
+<a href="{{ url_for('main.change_display_name') }}" class="btn btn-primary">Change Display Name</a>
+<a href="{{ url_for('main.update_profile_picture') }}" class="btn btn-primary">Update Profile Picture</a>
+{% endblock content %}
