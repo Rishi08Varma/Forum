@@ -1,98 +1,185 @@
+<!-- ICT/templates/post.html -->
 {% extends "base.html" %}
-{% block content %}
-<article class="media content-section">
-    <div class="media-body">
-        <div class="article-metadata">
-            <a class="mr-2" href="#">{{ post.author.username }}</a>
-            <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
-        </div>
-        <h2>{{ post.subject }}</h2>
-        <p>{{ post.content }}</p>
-        <form action="{{ url_for('main.upvote_post', post_id=post.id) }}" method="post">
-            <button type="submit" class="btn btn-success">Upvote</button>
-        </form>
-        <form action="{{ url_for('main.downvote_post', post_id=post.id) }}" method="post">
-            <button type="submit" class="btn btn-danger">Downvote</button>
-        </form>
-        <p>Upvotes: {{ post.upvotes }} | Downvotes: {{ post.downvotes }}</p>
-    </div>
-</article>
 
-<section>
-    <h3>Comments</h3>
-    <form action="{{ url_for('main.comment_post', post_id=post.id) }}" method="post">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.content.label(class="form-control-label") }}
-            {{ form.content(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.submit(class="btn btn-primary") }}
-        </div>
-    </form>
-    {% for comment in post.comments %}
-        <div class="media content-section">
-            <div class="media-body">
-                <div class="article-metadata">
-                    <a class="mr-2" href="#">{{ comment.author.username }}</a>
-                    <small class="text-muted">{{ comment.date_posted.strftime('%Y-%m-%d') }}</small>
+{% block title %}{{ post.title }} - Forum{% endblock %}
+
+{% block additional_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/post.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Main post content -->
+        <div class="col-md-12">
+            <article class="content-section post-detail">
+                <div class="d-flex">
+                    <!-- Vote buttons -->
+                    <div class="vote-buttons text-center me-3">
+                        <div id="upvote-{{ post.id }}" 
+                             class="vote-button {% if post.user_vote_value == 1 %}active{% endif %}"
+                             onclick="handleVote('{{ post.id }}', 'up')">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                        <div id="vote-count-{{ post.id }}" class="my-1">
+                            {{ post.get_vote_count() }}
+                        </div>
+                        <div id="downvote-{{ post.id }}" 
+                             class="vote-button {% if post.user_vote_value == -1 %}active{% endif %}"
+                             onclick="handleVote('{{ post.id }}', 'down')">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                    </div>
+
+                    <!-- Post content -->
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h1 class="post-title">{{ post.title }}</h1>
+                            {% if post.author == current_user or (current_user.is_authenticated and current_user.is_admin) %}
+                            <div class="btn-group">
+                                <a href="{{ url_for('main.update_post', post_id=post.id) }}" 
+                                   class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <button type="button" 
+                                        class="btn btn-outline-danger btn-sm"
+                                        onclick="confirmDelete('delete-post-form')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                                <form id="delete-post-form" 
+                                      action="{{ url_for('main.delete_post', post_id=post.id) }}" 
+                                      method="POST" 
+                                      style="display: none;">
+                                    <input type="hidden" name="_method" value="DELETE">
+                                </form>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="post-metadata">
+                            <a href="{{ url_for('main.user_posts', username=post.author.username) }}" 
+                               class="text-decoration-none">
+                                <img src="{{ url_for('static', filename='uploads/profile_pics/' + post.author.image_file) }}" 
+                                     class="rounded-circle profile-thumbnail" 
+                                     alt="Profile picture">
+                                {{ post.author.username }}
+                            </a>
+                            <span class="text-muted">
+                                <i class="fas fa-clock"></i> 
+                                {{ post.date_posted.strftime('%Y-%m-%d %H:%M:%S') }}
+                                {% if post.edited %}
+                                    <span class="edited-tag">
+                                        <i class="fas fa-edit"></i> edited
+                                    </span>
+                                {% endif %}
+                            </span>
+                            {% if post.category %}
+                            <span class="badge bg-primary">
+                                <i class="fas fa-tag"></i> {{ post.category }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <div class="post-content mt-3">
+                            {{ post.content|safe }}
+                        </div>
+                    </div>
                 </div>
-                <p>{{ comment.content }}</p>
-                <form action="{{ url_for('main.upvote_comment', comment_id=comment.id) }}" method="post">
-                    <button type="submit" class="btn btn-success">Upvote</button>
-                </form>
-                <form action="{{ url_for('main.downvote_comment', comment_id=comment.id) }}" method="post">
-                    <button type="submit" class="btn btn-danger">Downvote</button>
-                </form>
-                <p>Upvotes: {{ comment.upvotes }} | Downvotes: {{ comment.downvotes }}</p>
-                <button class="btn btn-link" data-toggle="collapse" data-target="#replyForm{{ comment.id }}">Reply</button>
-                <div id="replyForm{{ comment.id }}" class="collapse">
-                    <form action="{{ url_for('main.reply_comment', post_id=comment.post_id, comment_id=comment.id) }}" method="post">
+            </article>
+
+            <!-- Comments section -->
+            <section class="comments-section mt-4">
+                <h3><i class="fas fa-comments"></i> Comments ({{ post.comments|length }})</h3>
+                
+                {% if current_user.is_authenticated %}
+                <div class="add-comment mb-4">
+                    <form method="POST" action="{{ url_for('main.add_comment', post_id=post.id) }}" id="comment-form">
                         {{ form.hidden_tag() }}
                         <div class="form-group">
                             {{ form.content.label(class="form-control-label") }}
                             {{ form.content(class="form-control") }}
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mt-2">
                             {{ form.submit(class="btn btn-primary") }}
                         </div>
                     </form>
                 </div>
-                {% for reply in comment.replies %}
-                    <div class="ml-4">
-                        <div class="media content-section">
-                            <div class="media-body">
-                                <div class="article-metadata">
-                                    <a class="mr-2" href="#">{{ reply.author.username }}</a>
-                                    <small class="text-muted">{{ reply.date_posted.strftime('%Y-%m-%d') }}</small>
-                                </div>
-                                <p>{{ reply.content }}</p>
-                                <form action="{{ url_for('main.upvote_comment', comment_id=reply.id) }}" method="post">
-                                    <button type="submit" class="btn btn-success">Upvote</button>
-                                </form>
-                                <form action="{{ url_for('main.downvote_comment', comment_id=reply.id) }}" method="post">
-                                    <button type="submit" class="btn btn-danger">Downvote</button>
-                                </form>
-                                <p>Upvotes: {{ reply.upvotes }} | Downvotes: {{ reply.downvotes }}</p>
-                                <button class="btn btn-link" data-toggle="collapse" data-target="#replyForm{{ reply.id }}">Reply</button>
-                                <div id="replyForm{{ reply.id }}" class="collapse">
-                                    <form action="{{ url_for('main.reply_comment', post_id=reply.post_id, comment_id=reply.id) }}" method="post">
-                                        {{ form.hidden_tag() }}
-                                        <div class="form-group">
-                                            {{ form.content.label(class="form-control-label") }}
-                                            {{ form.content(class="form-control") }}
-                                        </div>
-                                        <div class="form-group">
-                                            {{ form.submit(class="btn btn-primary") }}
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    Please <a href="{{ url_for('main.login') }}">login</a> to comment.
+                </div>
+                {% endif %}
+
+                <!-- Comments list -->
+                <div class="comments-list">
+                    {% for comment in post.comments|sort(attribute='date_posted', reverse=true) %}
+                    <div class="comment" id="comment-{{ comment.id }}">
+                        <div class="comment-metadata">
+                            <a href="{{ url_for('main.user_posts', username=comment.author.username) }}" 
+                               class="text-decoration-none">
+                                <img src="{{ url_for('static', filename='uploads/profile_pics/' + comment.author.image_file) }}" 
+                                     class="rounded-circle comment-thumbnail" 
+                                     alt="Profile picture">
+                                {{ comment.author.username }}
+                            </a>
+                            <span class="text-muted">
+                                <i class="fas fa-clock"></i> 
+                                {{ comment.date_posted.strftime('%Y-%m-%d %H:%M:%S') }}
+                                {% if comment.edited %}
+                                    <span class="edited-tag">
+                                        <i class="fas fa-edit"></i> edited
+                                    </span>
+                                {% endif %}
+                            </span>
                         </div>
+                        <div class="comment-content">
+                            {{ comment.content }}
+                        </div>
+                        {% if comment.author == current_user or (current_user.is_authenticated and current_user.is_admin) %}
+                        <div class="comment-actions">
+                            <button class="btn btn-link btn-sm text-secondary" 
+                                    onclick="editComment('{{ comment.id }}')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-link btn-sm text-danger" 
+                                    onclick="deleteComment('{{ comment.id }}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                        {% endif %}
                     </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Comment Modal -->
+<div class="modal fade" id="editCommentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Comment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-comment-form">
+                    <input type="hidden" id="edit-comment-id">
+                    <div class="mb-3">
+                        <textarea class="form-control" id="edit-comment-content" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="updateComment()">Save Changes</button>
             </div>
         </div>
-    {% endfor %}
-</section>
-{% endblock content %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block additional_js %}
+<script src="{{ url_for('static', filename='js/post.js') }}"></script>
+{% endblock %}

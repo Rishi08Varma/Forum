@@ -1,0 +1,27 @@
+.vote-button {
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s ease;
+}
+
+.vote-button:hover {
+    color: #0d6efd;
+}
+
+.vote-button.active {
+    color: #0d6efd;
+}
+
+.vote-buttons {
+    min-width: 40px;
+}
+
+.post-card {
+    transition: transform 0.2s;
+    border: 1px solid rgba(0,0,0,.125);
+}
+
+.post-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}

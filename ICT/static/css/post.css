@@ -1,0 +1,90 @@
+.content-section {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.post-title {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.post-metadata {
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.profile-thumbnail {
+    width: 30px;
+    height: 30px;
+    margin-right: 5px;
+    object-fit: cover;
+}
+
+.comment-thumbnail {
+    width: 25px;
+    height: 25px;
+    margin-right: 5px;
+    object-fit: cover;
+}
+
+.edited-tag {
+    font-size: 0.8em;
+    color: #6c757d;
+    margin-left: 5px;
+}
+
+.vote-button {
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s ease;
+}
+
+.vote-button:hover {
+    color: #0d6efd;
+}
+
+.vote-button.active {
+    color: #0d6efd;
+}
+
+.vote-buttons {
+    min-width: 40px;
+}
+
+.comments-section {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+
+.comment {
+    border-left: 3px solid #0d6efd;
+    padding: 10px 20px;
+    margin-bottom: 15px;
+    background: #f8f9fa;
+    border-radius: 0 8px 8px 0;
+}
+
+.comment-metadata {
+    margin-bottom: 5px;
+    font-size: 0.9em;
+}
+
+.comment-content {
+    margin-bottom: 5px;
+    white-space: pre-wrap;
+}
+
+.comment-actions {
+    text-align: right;
+}
+
+.comment-actions button {
+    padding: 0;
+    margin-left: 10px;
+    text-decoration: none;
+}

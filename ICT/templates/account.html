@@ -1,11 +1,210 @@
+<!-- ICT/templates/account.html -->
 {% extends "base.html" %}
+
+{% block title %}Account Settings - Forum{% endblock %}
+
+{% block additional_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}">
+{% endblock %}
+
 {% block content %}
-<h2>Account</h2>
-<p>Username: {{ current_user.username }}</p>
-<p>Email: {{ current_user.email }}</p>
-<p>Display Name: {{ current_user.display_name }}</p>
-<img src="{{ url_for('static', filename='profile_pics/' + current_user.image_file) }}" alt="Profile Picture" class="img-thumbnail">
-<a href="{{ url_for('main.change_password') }}" class="btn btn-primary">Change Password</a>
-<a href="{{ url_for('main.change_display_name') }}" class="btn btn-primary">Change Display Name</a>
-<a href="{{ url_for('main.update_profile_picture') }}" class="btn btn-primary">Update Profile Picture</a>
-{% endblock content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Profile Overview -->
+            <div class="content-section profile-section">
+                <div class="text-center mb-3">
+                    <img class="rounded-circle account-img" 
+                         src="{{ url_for('static', filename='uploads/profile_pics/' + current_user.image_file) }}"
+                         alt="Profile picture">
+                    <h2 class="account-heading">{{ current_user.username }}</h2>
+                    <p class="text-muted">
+                        <i class="fas fa-envelope"></i> {{ current_user.email }}
+                    </p>
+                </div>
+                <div class="profile-stats">
+                    <div class="row text-center">
+                        <div class="col">
+                            <h4>{{ posts|length }}</h4>
+                            <small class="text-muted">Posts</small>
+                        </div>
+                        <div class="col">
+                            <h4>{{ comments|length }}</h4>
+                            <small class="text-muted">Comments</small>
+                        </div>
+                        <div class="col">
+                            <h4>{{ karma }}</h4>
+                            <small class="text-muted">Karma</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-muted mt-3">
+                    <p>
+                        <i class="fas fa-calendar-alt"></i> Joined: 
+                        {{ current_user.date_joined.strftime('%Y-%m-%d') }}
+                    </p>
+                    {% if current_user.last_seen %}
+                    <p>
+                        <i class="fas fa-clock"></i> Last seen: 
+                        {{ current_user.last_seen.strftime('%Y-%m-%d %H:%M') }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <!-- Account Settings -->
+            <div class="content-section">
+                <h2 class="border-bottom pb-3">
+                    <i class="fas fa-user-cog"></i> Account Settings
+                </h2>
+                <form method="POST" enctype="multipart/form-data" class="mt-4">
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Username -->
+                    <div class="mb-3">
+                        {{ form.username.label(class="form-label") }}
+                        {% if form.username.errors %}
+                            {{ form.username(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.username.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.username(class="form-control") }}
+                        {% endif %}
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {% if form.email.errors %}
+                            {{ form.email(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.email.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.email(class="form-control") }}
+                        {% endif %}
+                    </div>
+
+                    <!-- Profile Picture -->
+                    <div class="mb-3">
+                        {{ form.picture.label(class="form-label") }}
+                        <div class="custom-file">
+                            {{ form.picture(class="form-control" + (" is-invalid" if form.picture.errors else ""), 
+                                          onchange="previewImage(this);") }}
+                            {% if form.picture.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.picture.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="mt-2">
+                            <img id="preview" class="img-preview rounded-circle" 
+                                 src="{{ url_for('static', filename='uploads/profile_pics/' + current_user.image_file) }}"
+                                 alt="Profile preview">
+                        </div>
+                        <small class="form-text text-muted">
+                            Maximum file size: 2MB. Supported formats: JPG, PNG
+                        </small>
+                    </div>
+
+                    <!-- Bio -->
+                    <div class="mb-3">
+                        {{ form.bio.label(class="form-label") }}
+                        {% if form.bio.errors %}
+                            {{ form.bio(class="form-control is-invalid", rows="4") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.bio.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.bio(class="form-control", rows="4") }}
+                        {% endif %}
+                        <div id="bioCounter" class="form-text text-muted">
+                            <small>Characters remaining: <span>500</span></small>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="content-section mt-4">
+                <h2 class="border-bottom pb-3">
+                    <i class="fas fa-shield-alt"></i> Security Settings
+                </h2>
+                <div class="mt-4">
+                    <a href="{{ url_for('main.change_password') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-key"></i> Change Password
+                    </a>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="content-section mt-4">
+                <h2 class="border-bottom pb-3 text-danger">
+                    <i class="fas fa-exclamation-triangle"></i> Danger Zone
+                </h2>
+                <div class="mt-4">
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                        <i class="fas fa-user-times"></i> Delete Account
+                    </button>
+                </div>
+            </div>
+
+            <!-- Delete Account Modal -->
+            <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger">
+                                <i class="fas fa-exclamation-triangle"></i> Delete Account
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-danger">
+                                <h6 class="alert-heading">Warning: This action cannot be undone!</h6>
+                                <p>Deleting your account will:</p>
+                                <ul>
+                                    <li>Permanently delete your profile</li>
+                                    <li>Delete all your posts and comments</li>
+                                    <li>Remove all your votes and interactions</li>
+                                    <li>Delete your profile picture</li>
+                                </ul>
+                            </div>
+                            <p>Please type your username "<strong id="usernameToMatch">{{ current_user.username }}</strong>" to confirm:</p>
+                            <input type="text" id="confirmUsername" class="form-control" placeholder="Enter your username">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <form action="{{ url_for('main.delete_account') }}" method="POST">
+                                <button type="submit" class="btn btn-danger" id="confirmDeleteBtn" disabled>
+                                    <i class="fas fa-user-times"></i> Delete Account
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block additional_js %}
+<script src="{{ url_for('static', filename='js/account.js') }}"></script>
+{% endblock %}

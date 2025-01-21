@@ -1,0 +1,44 @@
+<!-- ICT/templates/errors/500.html -->
+{% extends "base.html" %}
+
+{% block title %}500 Server Error - Forum{% endblock %}
+
+{% block additional_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/errors.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container error-container">
+    <div class="error-content text-center">
+        <div class="error-code">500</div>
+        <h1 class="error-title">Internal Server Error</h1>
+        <div class="error-message">
+            <p>Something went wrong on our end. We're working to fix it.</p>
+            <p class="text-muted">Error occurred at: {{ "2025-01-20 21:10:58" }}</p>
+            {% if error_id %}
+            <p class="text-muted">Error ID: {{ error_id }}</p>
+            {% endif %}
+        </div>
+        <div class="error-actions mt-4">
+            <a href="{{ url_for('main.home') }}" class="btn btn-primary">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+            <a href="javascript:location.reload()" class="btn btn-outline-primary">
+                <i class="fas fa-redo"></i> Try Again
+            </a>
+        </div>
+        {% if current_user.is_admin %}
+        <div class="admin-error-details mt-4">
+            <div class="card">
+                <div class="card-header">
+                    Error Details (Admin Only)
+                </div>
+                <div class="card-body">
+                    <pre class="error-stack">{{ error_stack if error_stack else 'No stack trace available' }}</pre>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

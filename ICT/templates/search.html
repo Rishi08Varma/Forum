@@ -1,0 +1,200 @@
+<!-- ICT/templates/search.html -->
+{% extends "base.html" %}
+
+{% block title %}Search Results - Forum{% endblock %}
+
+{% block additional_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Search Header -->
+    <div class="search-header mb-4">
+        <form class="search-form" method="GET" action="{{ url_for('main.search') }}">
+            <div class="input-group">
+                <input type="text" 
+                       class="form-control" 
+                       name="q" 
+                       value="{{ query }}" 
+                       placeholder="Search posts, comments, or users..."
+                       aria-label="Search">
+                <button class="btn btn-primary" type="submit">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+            <div class="search-filters mt-3">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="type" id="all" 
+                           value="all" {{ 'checked' if search_type == 'all' }}>
+                    <label class="form-check-label" for="all">All</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="type" id="posts" 
+                           value="posts" {{ 'checked' if search_type == 'posts' }}>
+                    <label class="form-check-label" for="posts">Posts</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="type" id="comments" 
+                           value="comments" {{ 'checked' if search_type == 'comments' }}>
+                    <label class="form-check-label" for="comments">Comments</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="type" id="users" 
+                           value="users" {{ 'checked' if search_type == 'users' }}>
+                    <label class="form-check-label" for="users">Users</label>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Search Results -->
+    {% if query %}
+        <div class="search-results">
+            <h4 class="mb-4">
+                <i class="fas fa-search"></i> 
+                Search Results for "{{ query }}"
+                <small class="text-muted">({{ results|length }} results)</small>
+            </h4>
+
+            {% if results %}
+                {% for result in results %}
+                    <div class="search-result-item">
+                        {% if result.type == 'post' %}
+                            <!-- Post Result -->
+                            <div class="post-result">
+                                <h5>
+                                    <a href="{{ url_for('main.post', post_id=result.id) }}" 
+                                       class="text-decoration-none">
+                                        {{ result.title }}
+                                    </a>
+                                </h5>
+                                <div class="result-metadata">
+                                    <small class="text-muted">
+                                        Posted by 
+                                        <a href="{{ url_for('main.user_posts', username=result.author.username) }}" 
+                                           class="text-decoration-none">
+                                            {{ result.author.username }}
+                                        </a>
+                                        on {{ result.date_posted.strftime('%Y-%m-%d') }}
+                                    </small>
+                                    <div class="result-stats">
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-arrow-up"></i> {{ result.get_vote_count() }}
+                                        </span>
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-comments"></i> {{ result.comments|length }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <p class="result-preview">
+                                    {{ result.content[:200] + '...' if result.content|length > 200 else result.content }}
+                                </p>
+                            </div>
+
+                        {% elif result.type == 'comment' %}
+                            <!-- Comment Result -->
+                            <div class="comment-result">
+                                <div class="result-content">{{ result.content }}</div>
+                                <div class="result-metadata">
+                                    <small class="text-muted">
+                                        Comment by 
+                                        <a href="{{ url_for('main.user_posts', username=result.author.username) }}" 
+                                           class="text-decoration-none">
+                                            {{ result.author.username }}
+                                        </a>
+                                        on 
+                                        <a href="{{ url_for('main.post', post_id=result.post.id) }}" 
+                                           class="text-decoration-none">
+                                            {{ result.post.title }}
+                                        </a>
+                                        <br>
+                                        {{ result.date_posted.strftime('%Y-%m-%d') }}
+                                    </small>
+                                </div>
+                            </div>
+
+                        {% elif result.type == 'user' %}
+                            <!-- User Result -->
+                            <div class="user-result d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='uploads/profile_pics/' + result.image_file) }}" 
+                                     class="rounded-circle me-3" 
+                                     alt="Profile picture"
+                                     width="50" 
+                                     height="50">
+                                <div class="user-info">
+                                    <h5 class="mb-1">
+                                        <a href="{{ url_for('main.user_posts', username=result.username) }}" 
+                                           class="text-decoration-none">
+                                            {{ result.username }}
+                                        </a>
+                                        {% if result.is_admin %}
+                                            <span class="badge bg-danger">Admin</span>
+                                        {% endif %}
+                                    </h5>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar-alt"></i> 
+                                        Joined {{ result.date_joined.strftime('%B %Y') }}
+                                        <br>
+                                        <i class="fas fa-chart-bar"></i> 
+                                        {{ result.posts|length }} posts, 
+                                        {{ result.comments|length }} comments
+                                    </small>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <!-- Pagination -->
+                {% if pages > 1 %}
+                <nav aria-label="Search results pages" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.search', q=query, type=search_type, page=page-1) }}">
+                                Previous
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for p in range(1, pages + 1) %}
+                            <li class="page-item {{ 'active' if p == page else '' }}">
+                                <a class="page-link" href="{{ url_for('main.search', q=query, type=search_type, page=p) }}">
+                                    {{ p }}
+                                </a>
+                            </li>
+                        {% endfor %}
+
+                        {% if page < pages %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.search', q=query, type=search_type, page=page+1) }}">
+                                Next
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+            {% else %}
+                <div class="no-results text-center">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No results found for your search.</p>
+                    <p class="text-muted">Try different keywords or filters.</p>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="text-center initial-search">
+            <i class="fas fa-search fa-4x text-muted mb-3"></i>
+            <h4>Search the Forum</h4>
+            <p class="text-muted">Enter keywords above to search for posts, comments, or users.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block additional_js %}
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+{% endblock %}

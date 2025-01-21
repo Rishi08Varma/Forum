@@ -1,0 +1,46 @@
+<!-- ICT/templates/errors/404.html -->
+{% extends "base.html" %}
+
+{% block title %}404 Not Found - Forum{% endblock %}
+
+{% block additional_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/errors.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container error-container">
+    <div class="error-content text-center">
+        <div class="error-code">404</div>
+        <h1 class="error-title">Page Not Found</h1>
+        <div class="error-message">
+            <p>The page you're looking for doesn't exist or has been moved.</p>
+            <p class="text-muted">Error occurred at: {{ "2025-01-20 21:10:58" }}</p>
+            {% if request_path %}
+            <p class="text-muted">Requested path: {{ request_path }}</p>
+            {% endif %}
+        </div>
+        <div class="error-actions mt-4">
+            <a href="{{ url_for('main.home') }}" class="btn btn-primary">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+            <a href="javascript:history.back()" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Go Back
+            </a>
+        </div>
+        {% if similar_pages %}
+        <div class="similar-pages mt-4">
+            <h5>You might be looking for:</h5>
+            <ul class="list-unstyled">
+                {% for page in similar_pages %}
+                <li>
+                    <a href="{{ page.url }}" class="text-decoration-none">
+                        {{ page.title }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+.content-section {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+#form-title {
+    font-weight: 600;
+}
+
+.character-counter {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.character-counter.warning {
+    color: #ffc107;
+}
+
+.character-counter.danger {
+    color: #dc3545;
+}
+
+.btn-primary {
+    padding: 8px 20px;
+}
+
+.modal-content {
+    border-radius: 8px;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+#previewContent {
+    white-space: pre-wrap;
+}

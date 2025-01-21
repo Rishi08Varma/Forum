@@ -1,0 +1,95 @@
+<!-- ICT/templates/admin_edit_user.html -->
+{% extends "base.html" %}
+
+{% block title %}Edit User - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="content-section">
+                <h2 class="border-bottom pb-3">
+                    <i class="fas fa-user-edit"></i> Edit User: {{ user.username }}
+                </h2>
+                <div class="mt-4">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Username -->
+                        <div class="mb-3">
+                            {{ form.username.label(class="form-label") }}
+                            {% if form.username.errors %}
+                                {{ form.username(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.username.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.username(class="form-control") }}
+                            {% endif %}
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {% if form.email.errors %}
+                                {{ form.email(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.email(class="form-control") }}
+                            {% endif %}
+                        </div>
+
+                        <!-- Bio -->
+                        <div class="mb-3">
+                            {{ form.bio.label(class="form-label") }}
+                            {% if form.bio.errors %}
+                                {{ form.bio(class="form-control is-invalid", rows="4") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.bio.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.bio(class="form-control", rows="4") }}
+                            {% endif %}
+                            <small class="text-muted">Maximum 500 characters</small>
+                        </div>
+
+                        <!-- User Info -->
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted">User Information</h6>
+                                <p class="mb-1">
+                                    <strong>Join Date:</strong> {{ user.date_joined.strftime('%Y-%m-%d') }}
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Status:</strong>
+                                    {% if user.is_admin %}
+                                        <span class="badge bg-danger">Admin</span>
+                                    {% else %}
+                                        <span class="badge bg-success">User</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Submit and Cancel Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('main.admin') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Admin Panel
+                            </a>
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

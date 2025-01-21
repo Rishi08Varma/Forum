@@ -1,0 +1,83 @@
+/* ICT/static/css/main.css */
+body {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer {
+    margin-top: auto;
+}
+
+/* Post cards */
+.post-card {
+    transition: transform 0.2s;
+    margin-bottom: 20px;
+}
+
+.post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Vote buttons */
+.vote-button {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.vote-button:hover {
+    color: #007bff;
+}
+
+.vote-button.active {
+    color: #007bff;
+}
+
+/* Profile image */
+.account-img {
+    height: 125px;
+    width: 125px;
+    margin-right: 20px;
+    margin-bottom: 16px;
+}
+
+/* Form styling */
+.content-section {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 3px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Navigation active state */
+.nav-link.active {
+    font-weight: bold;
+}
+
+/* Comment section */
+.comment-section {
+    margin-top: 30px;
+}
+
+.comment {
+    border-left: 3px solid #007bff;
+    padding-left: 15px;
+    margin-bottom: 15px;
+}
+
+/* Search bar */
+.search-form {
+    margin-bottom: 20px;
+}
+
+/* Admin panel */
+.admin-stats {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
